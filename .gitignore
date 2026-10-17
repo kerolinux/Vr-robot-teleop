@@ -179,3 +179,21 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+
+# Project data
+datasets/
+*.bag
+*.db3
+*.mcap
+*.hdf5
+
+# Editor
+.vscode/
