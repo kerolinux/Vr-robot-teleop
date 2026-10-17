@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>quest_teleop_core</name>
+  <version>0.1.0</version>
+  <description>Frame conversion, One-Euro filtering, clutch and workspace limiting for Quest teleoperation.</description>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

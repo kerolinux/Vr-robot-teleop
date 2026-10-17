@@ -1,0 +1,27 @@
+teleop_core:
+  ros__parameters:
+    base_frame: base_link
+    clutch_source: topic          # 'topic' = safe default; 'always' only for bench tests
+    clutch_on_threshold: 0.8
+    clutch_off_threshold: 0.5
+    input_timeout: 0.25           # s without hand data -> auto-disengage
+
+    position_scale: 1.0           # <1.0 = finer robot motion than hand motion
+    track_orientation: true
+    base_yaw_deg: 0.0             # rotate hand motion to match the direction you face the robot
+
+    # Robot start target in base frame (Panda-like: gripper pointing down).
+    # Re-tune in Phase 3 once the real arm's reachable workspace is known.
+    home_position: [0.4, 0.0, 0.4]
+    home_quaternion: [1.0, 0.0, 0.0, 0.0]
+    workspace_min: [0.2, -0.4, 0.1]
+    workspace_max: [0.7, 0.4, 0.8]
+
+    filter:
+      d_cutoff: 1.0
+      position:
+        min_cutoff: 1.0           # Hz, lower = smoother when still
+        beta: 10.0                # higher = less lag on fast motion
+      rotation:
+        min_cutoff: 1.0
+        beta: 1.0
