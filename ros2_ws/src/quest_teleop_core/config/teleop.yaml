@@ -6,16 +6,21 @@ teleop_core:
     clutch_off_threshold: 0.5
     input_timeout: 0.25           # s without hand data -> auto-disengage
 
+    # true: every time the clutch engages, the target starts from the robot's *measured* pose
+    # (TF base_frame -> ee_frame). The sim launch turns this on. Leave false when no robot is running.
+    use_robot_feedback: false
+    ee_frame: tool0
+
     position_scale: 1.0           # <1.0 = finer robot motion than hand motion
     track_orientation: true
     base_yaw_deg: 0.0             # rotate hand motion to match the direction you face the robot
 
-    # Robot start target in base frame (Panda-like: gripper pointing down).
-    # Re-tune in Phase 3 once the real arm's reachable workspace is known.
-    home_position: [0.4, 0.0, 0.4]
-    home_quaternion: [1.0, 0.0, 0.0, 0.0]
-    workspace_min: [0.2, -0.4, 0.1]
-    workspace_max: [0.7, 0.4, 0.8]
+    # Fallback start target when use_robot_feedback is false. These equal the UR5e "ready" pose
+    # (tool pointing down), measured from the URDF by forward kinematics.
+    home_position: [0.492, 0.133, 0.488]
+    home_quaternion: [0.7071, -0.7071, 0.0, 0.0]
+    workspace_min: [0.30, -0.25, 0.20]
+    workspace_max: [0.70, 0.50, 0.70]
 
     filter:
       d_cutoff: 1.0

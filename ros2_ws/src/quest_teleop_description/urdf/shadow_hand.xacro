@@ -1,0 +1,741 @@
+<?xml version="1.0"?>
+<!--
+  GENERATED FILE - do not edit by hand. Regenerate with tools/generate_shadow_hand_xacro.py
+  Source: https://github.com/AndrejOrsula/shadow_hand_ign (BSD), visual meshes/kinematics from
+  shadow-robot/sr_common. See THIRD_PARTY_NOTICES.md.
+  Wrist joints are fixed: 22 movable hand joints.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Shadow Hand (no wrist DOF) mounted on `parent` at the given origin. -->
+  <xacro:macro name="shadow_hand" params="prefix parent *origin">
+    <joint name="${prefix}mount" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}forearm"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <link name="${prefix}forearm">
+            <visual>
+                <geometry name="forearm_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/forearm.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="forearm_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/forearm.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}wrist">
+            <visual>
+                <geometry name="wrist_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/wrist.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="wrist_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/wrist.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}palm">
+            <visual>
+                <geometry name="palm_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/palm.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="palm_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/palm.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}forearm_joint" type="fixed">
+            <parent link="${prefix}forearm" />
+            <child link="${prefix}wrist" />
+            <origin rpy="0 0 0" xyz="0 -0.010 0.213" />
+        </joint>
+
+    <joint name="${prefix}wrist_joint" type="fixed">
+            <parent link="${prefix}wrist" />
+            <child link="${prefix}palm" />
+            <origin rpy="0 0 0" xyz="0 0 0.034" />
+        </joint>
+
+    <link name="${prefix}thumb_base" />
+
+    <link name="${prefix}thumb_proximal">
+            <visual>
+                <geometry name="thumb_proximal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/thumb_proximal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="thumb_proximal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/thumb_proximal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}thumb_hub" />
+
+    <link name="${prefix}thumb_middle">
+            <visual>
+                <geometry name="thumb_middle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/thumb_middle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="thumb_middle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/thumb_middle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}thumb_distal">
+            <visual>
+                <geometry name="thumb_distal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/thumb_distal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="thumb_distal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/thumb_distal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}thumb_joint1" type="revolute">
+            <parent link="${prefix}palm" />
+            <child link="${prefix}thumb_base" />
+            <origin rpy="0 0.785398163397 0.0" xyz="0.034 -0.0085 0.029" />
+            <axis xyz="0 0 -1" />
+            <limit effort="4.0" lower="-1.0471975512" upper="1.0471975512" velocity="4.0" />
+        </joint>
+
+    <joint name="${prefix}thumb_joint2" type="revolute">
+            <parent link="${prefix}thumb_base" />
+            <child link="${prefix}thumb_proximal" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0.0" upper="1.2217304764" velocity="4.0" />
+        </joint>
+
+    <joint name="${prefix}thumb_joint3" type="revolute">
+            <parent link="${prefix}thumb_proximal" />
+            <child link="${prefix}thumb_hub" />
+            <origin rpy="0 0 0" xyz="0 0 0.038" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="-0.209439510239" upper="0.209439510239" velocity="4.0" />
+        </joint>
+
+    <joint name="${prefix}thumb_joint4" type="revolute">
+            <parent link="${prefix}thumb_hub" />
+            <child link="${prefix}thumb_middle" />
+            <axis xyz="0 -1 0" />
+            <limit effort="4.0" lower="-0.698131700798" upper="0.698131700798" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}thumb_joint5" type="revolute">
+            <parent link="${prefix}thumb_middle" />
+            <child link="${prefix}thumb_distal" />
+            <origin rpy="0 0 -1.57079632679" xyz="0 0 0.032" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="4.0" />
+        </joint>
+
+    <link name="${prefix}index_finger_knuckle">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="index_finger_knuckle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/knuckle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="index_finger_knuckle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/knuckle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}index_finger_proximal">
+            <visual>
+                <geometry name="index_finger_proximal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_proximal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="index_finger_proximal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_proximal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}index_finger_middle">
+            <visual>
+                <geometry name="index_finger_middle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_middle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="index_finger_middle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_middle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}index_finger_distal">
+            <visual>
+                <geometry name="index_finger_distal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_distal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="index_finger_distal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_distal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}index_finger_joint1" type="revolute">
+            <parent link="${prefix}palm" />
+            <child link="${prefix}index_finger_knuckle" />
+            <origin rpy="0 0 0" xyz="0.033 0 0.095" />
+            <axis xyz="0 -1 0" />
+            <limit effort="4.0" lower="-0.349065850399" upper="0.349065850399" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}index_finger_joint2" type="revolute">
+            <parent link="${prefix}index_finger_knuckle" />
+            <child link="${prefix}index_finger_proximal" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}index_finger_joint3" type="revolute">
+            <parent link="${prefix}index_finger_proximal" />
+            <child link="${prefix}index_finger_middle" />
+            <origin rpy="0 0 0" xyz="0 0 0.045" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}index_finger_joint4" type="revolute">
+            <parent link="${prefix}index_finger_middle" />
+            <child link="${prefix}index_finger_distal" />
+            <origin rpy="0 0 0" xyz="0 0 0.025" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <link name="${prefix}middle_finger_knuckle">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="middle_finger_knuckle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/knuckle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="middle_finger_knuckle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/knuckle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}middle_finger_proximal">
+            <visual>
+                <geometry name="middle_finger_proximal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_proximal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="middle_finger_proximal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_proximal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}middle_finger_middle">
+            <visual>
+                <geometry name="middle_finger_middle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_middle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="middle_finger_middle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_middle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}middle_finger_distal">
+            <visual>
+                <geometry name="middle_finger_distal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_distal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="middle_finger_distal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_distal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}middle_finger_joint1" type="revolute">
+            <parent link="${prefix}palm" />
+            <child link="${prefix}middle_finger_knuckle" />
+            <origin rpy="0 0 0" xyz="0.011 0 0.099" />
+            <axis xyz="0 -1 0" />
+            <limit effort="4.0" lower="-0.349065850399" upper="0.349065850399" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}middle_finger_joint2" type="revolute">
+            <parent link="${prefix}middle_finger_knuckle" />
+            <child link="${prefix}middle_finger_proximal" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}middle_finger_joint3" type="revolute">
+            <parent link="${prefix}middle_finger_proximal" />
+            <child link="${prefix}middle_finger_middle" />
+            <origin rpy="0 0 0" xyz="0 0 0.045" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}middle_finger_joint4" type="revolute">
+            <parent link="${prefix}middle_finger_middle" />
+            <child link="${prefix}middle_finger_distal" />
+            <origin rpy="0 0 0" xyz="0 0 0.025" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <link name="${prefix}ring_finger_knuckle">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="ring_finger_knuckle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/knuckle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="ring_finger_knuckle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/knuckle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}ring_finger_proximal">
+            <visual>
+                <geometry name="ring_finger_proximal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_proximal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="ring_finger_proximal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_proximal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}ring_finger_middle">
+            <visual>
+                <geometry name="ring_finger_middle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_middle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="ring_finger_middle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_middle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}ring_finger_distal">
+            <visual>
+                <geometry name="ring_finger_distal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_distal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="ring_finger_distal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_distal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}ring_finger_joint1" type="revolute">
+            <parent link="${prefix}palm" />
+            <child link="${prefix}ring_finger_knuckle" />
+            <origin rpy="0 0 0" xyz="-0.011 0 0.095" />
+            <axis xyz="0 1 0" />
+            <limit effort="4.0" lower="-0.349065850399" upper="0.349065850399" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}ring_finger_joint2" type="revolute">
+            <parent link="${prefix}ring_finger_knuckle" />
+            <child link="${prefix}ring_finger_proximal" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}ring_finger_joint3" type="revolute">
+            <parent link="${prefix}ring_finger_proximal" />
+            <child link="${prefix}ring_finger_middle" />
+            <origin rpy="0 0 0" xyz="0 0 0.045" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}ring_finger_joint4" type="revolute">
+            <parent link="${prefix}ring_finger_middle" />
+            <child link="${prefix}ring_finger_distal" />
+            <origin rpy="0 0 0" xyz="0 0 0.025" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <link name="${prefix}little_finger_metacarpal">
+            <visual>
+                <geometry name="little_finger_metacarpal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/metacarpal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="little_finger_metacarpal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/metacarpal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}little_finger_knuckle">
+            <visual>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="little_finger_knuckle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/knuckle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin rpy="0 0 0" xyz="0 0 0.0005" />
+                <geometry name="little_finger_knuckle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/knuckle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}little_finger_proximal">
+            <visual>
+                <geometry name="little_finger_proximal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_proximal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="little_finger_proximal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_proximal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}little_finger_middle">
+            <visual>
+                <geometry name="little_finger_middle_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_middle.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="little_finger_middle_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_middle.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <link name="${prefix}little_finger_distal">
+            <visual>
+                <geometry name="little_finger_distal_visual">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/visual/finger_distal.dae" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry name="little_finger_distal_collision">
+                    <mesh filename="package://quest_teleop_description/meshes/shadow_hand/collision/finger_distal.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+    <joint name="${prefix}little_finger_joint1" type="revolute">
+            <parent link="${prefix}palm" />
+            <child link="${prefix}little_finger_metacarpal" />
+            <origin rpy="0 0 0" xyz="-0.033 0 0.02071" />
+            <axis xyz="0.573576436 0 0.819152044" />
+            <limit effort="4.0" lower="0" upper="0.785398163397" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}little_finger_joint2" type="revolute">
+            <parent link="${prefix}little_finger_metacarpal" />
+            <child link="${prefix}little_finger_knuckle" />
+            <origin rpy="0 0 0" xyz="0 0 0.06579" />
+            <axis xyz="0 1 0" />
+            <limit effort="4.0" lower="-0.349065850399" upper="0.349065850399" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}little_finger_joint3" type="revolute">
+            <parent link="${prefix}little_finger_knuckle" />
+            <child link="${prefix}little_finger_proximal" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}little_finger_joint4" type="revolute">
+            <parent link="${prefix}little_finger_proximal" />
+            <child link="${prefix}little_finger_middle" />
+            <origin rpy="0 0 0" xyz="0 0 0.045" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+
+    <joint name="${prefix}little_finger_joint5" type="revolute">
+            <parent link="${prefix}little_finger_middle" />
+            <child link="${prefix}little_finger_distal" />
+            <origin rpy="0 0 0" xyz="0 0 0.025" />
+            <axis xyz="1 0 0" />
+            <limit effort="4.0" lower="0" upper="1.57079632679" velocity="2.0" />
+        </joint>
+  </xacro:macro>
+
+  <!-- Mock ros2_control hardware (position command interfaces) for the hand joints. -->
+  <xacro:macro name="shadow_hand_ros2_control" params="name prefix">
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+      </hardware>
+      <joint name="${prefix}thumb_joint1">
+        <command_interface name="position">
+          <param name="min">-1.047198</param>
+          <param name="max">1.047198</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}thumb_joint2">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.221730</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}thumb_joint3">
+        <command_interface name="position">
+          <param name="min">-0.209440</param>
+          <param name="max">0.209440</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}thumb_joint4">
+        <command_interface name="position">
+          <param name="min">-0.698132</param>
+          <param name="max">0.698132</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}thumb_joint5">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}index_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.349066</param>
+          <param name="max">0.349066</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}index_finger_joint2">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}index_finger_joint3">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}index_finger_joint4">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}middle_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.349066</param>
+          <param name="max">0.349066</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}middle_finger_joint2">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}middle_finger_joint3">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}middle_finger_joint4">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}ring_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.349066</param>
+          <param name="max">0.349066</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}ring_finger_joint2">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}ring_finger_joint3">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}ring_finger_joint4">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}little_finger_joint1">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">0.785398</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}little_finger_joint2">
+        <command_interface name="position">
+          <param name="min">-0.349066</param>
+          <param name="max">0.349066</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}little_finger_joint3">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}little_finger_joint4">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="${prefix}little_finger_joint5">
+        <command_interface name="position">
+          <param name="min">0.000000</param>
+          <param name="max">1.570796</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+      </joint>
+    </ros2_control>
+  </xacro:macro>
+
+</robot>

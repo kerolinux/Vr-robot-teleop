@@ -29,7 +29,9 @@ from rclpy.qos import (
     QoSReliabilityPolicy,
     qos_profile_sensor_data,
 )
+from rclpy.time import Time
 from std_msgs.msg import Bool, Float32
+from tf2_ros import Buffer, TransformException, TransformListener
 
 from .frame_transform import openxr_to_ros_position, openxr_to_ros_quaternion
 from .one_euro_filter import OneEuroFilter, OneEuroQuaternionFilter
@@ -64,6 +66,11 @@ class TeleopCoreNode(Node):
             raise ValueError("clutch_source must be 'topic' or 'always'")
         self._timeout = float(get("input_timeout"))
         self._base_frame = get("base_frame")
+        self._use_feedback = bool(get("use_robot_feedback"))
+        self._ee_frame = get("ee_frame")
+        if self._use_feedback:
+            self._tf_buffer = Buffer()
+            self._tf_listener = TransformListener(self._tf_buffer, self)
 
         # --- state ---
         self._hand = None            # (position, quaternion) filtered, ROS frame
@@ -95,6 +102,8 @@ class TeleopCoreNode(Node):
         d("gripper_topic", "/teleop/gripper_cmd")
         d("engaged_topic", "/teleop/engaged")
         d("base_frame", "base_link")
+        d("use_robot_feedback", False)         # anchor the target to the measured robot pose on engage
+        d("ee_frame", "tool0")                  # end-effector frame used for that feedback
         d("clutch_source", "topic")            # 'topic' | 'always' (bench testing only)
         d("clutch_on_threshold", 0.8)
         d("clutch_off_threshold", 0.5)
@@ -166,9 +175,30 @@ class TeleopCoreNode(Node):
         if self._hand is None:
             self.get_logger().warn("Clutch pressed but no hand data yet", throttle_duration_sec=2.0)
             return
+        if self._use_feedback:
+            # Start from where the robot really is, so engaging never makes the target jump.
+            pose = self._robot_pose()
+            if pose is None:
+                self.get_logger().warn(
+                    f"Cannot engage: no fresh TF {self._base_frame} -> {self._ee_frame}",
+                    throttle_duration_sec=2.0)
+                return
+            self._mapper.set_target(*pose)
         self._mapper.engage(*self._hand)
         self._engaged_pub.publish(Bool(data=True))
         self.get_logger().info("ENGAGED")
+
+    def _robot_pose(self):
+        """Measured end-effector pose in the base frame, or None if TF is missing or stale."""
+        try:
+            t = self._tf_buffer.lookup_transform(self._base_frame, self._ee_frame, Time())
+        except TransformException:
+            return None
+        age = (self.get_clock().now() - Time.from_msg(t.header.stamp)).nanoseconds * 1e-9
+        if age > 1.0:
+            return None
+        tr, ro = t.transform.translation, t.transform.rotation
+        return np.array([tr.x, tr.y, tr.z]), np.array([ro.x, ro.y, ro.z, ro.w])
 
     def _disengage(self, reason: str) -> None:
         if not self._mapper.engaged:

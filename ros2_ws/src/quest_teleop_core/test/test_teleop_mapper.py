@@ -69,3 +69,15 @@ def test_hysteresis():
     assert [h.update(v) for v in (0.6, 0.9, 0.6, 0.4, 0.6)] == [False, True, True, False, False]
     with pytest.raises(ValueError):
         Hysteresis(on=0.5, off=0.8)
+
+
+def test_set_target_reseeds_the_hold_point():
+    m = make()
+    m.set_target([0.1, 0.2, 0.3], [0.0, 0.0, 0.0, 2.0])  # quaternion gets normalised
+    p, q = m.target
+    assert np.allclose(p, [0.1, 0.2, 0.3]) and np.allclose(q, [0, 0, 0, 1])
+    m.engage([0, 0, 0], IDENT)
+    p, _ = m.update([0.0, 0.0, 0.0], IDENT)
+    assert np.allclose(p, [0.1, 0.2, 0.3])  # engaging from the re-seeded target: no jump
+    with pytest.raises(RuntimeError):
+        m.set_target([0, 0, 0], IDENT)       # not allowed while engaged

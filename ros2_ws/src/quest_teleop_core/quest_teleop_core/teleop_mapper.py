@@ -74,6 +74,13 @@ class TeleopMapper:
     def disengage(self) -> None:
         self._engaged = False  # target is held at its last value
 
+    def set_target(self, position, quaternion) -> None:
+        """Re-seed the held target (e.g. from the robot's measured pose). Disengaged only."""
+        if self._engaged:
+            raise RuntimeError("set_target() is only allowed while disengaged")
+        self._target_p = np.asarray(position, dtype=float).copy()
+        self._target_q = normalize(quaternion)
+
     def update(self, hand_p, hand_q) -> Optional[Tuple[np.ndarray, np.ndarray]]:
         """Return the new (position, quaternion) target, or None when disengaged."""
         if not self._engaged:

@@ -1,0 +1,17 @@
+hand_retarget:
+  ros__parameters:
+    input_topic: /teleop/right_hand/keypoints
+    output_topic: /hand_position_controller/commands
+    engaged_topic: /teleop/engaged
+    require_engaged: true         # false = fingers follow even when the arm clutch is released
+    max_joint_speed: 8.0          # rad/s cap on every finger joint
+
+    flexion_gain: 1.0             # robot finger bend = gain * human finger bend
+    abduction_gain: 1.0           # finger spreading
+    abduction_sign: 1.0           # set -1.0 if fingers spread the wrong way
+    little_arch_gain: 0.25        # little-finger palm arch as a fraction of its knuckle flexion
+
+    # Thumb (heuristic, tune by eye): rest swing of a relaxed human thumb, direction, overall gain
+    thumb_rest_yaw: 0.5
+    thumb_swing_sign: 1.0
+    thumb_gain: 1.0

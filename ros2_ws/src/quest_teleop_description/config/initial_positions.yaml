@@ -1,0 +1,8 @@
+# Arm "ready" pose: tool pointing straight down, tool0 at (0.492, 0.133, 0.488) m in base_link.
+# (Computed by forward kinematics from the URDF; UR5e. Hand joints start at 0 = open.)
+shoulder_pan_joint: 0.0
+shoulder_lift_joint: -1.5708
+elbow_joint: 1.5708
+wrist_1_joint: -1.5708
+wrist_2_joint: -1.5708
+wrist_3_joint: 0.0
