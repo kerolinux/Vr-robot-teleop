@@ -1,0 +1,10 @@
+episode_recorder:
+  ros__parameters:
+    output_dir: ""            # "" = ~/quest_teleop_datasets ; or e.g. /home/<you>/Vr-robot-teleop/datasets
+    task: teleop_demo         # free-text label stored with every episode
+    rate_hz: 30.0
+    max_obs_age: 0.25         # s: older joint states / TF count as a dropped sample
+    min_samples: 15           # shorter episodes are discarded on stop
+    record_rosbag: false      # true = also run `ros2 bag record` for every episode
+    base_frame: base_link
+    ee_frame: tool0
