@@ -71,6 +71,22 @@ def generate_launch_description():
             Node(package="moveit_servo", executable="servo_node", name="servo_node", output="screen",
                  parameters=[moveit_config.to_dict(), servo_params]),
             Node(package="quest_teleop_control", executable="servo_mode_switcher", output="screen"),
+            Node(package="moveit_servo", executable="servo_node", name="servo_node", namespace="left", output="screen",
+                 parameters=[moveit_config.to_dict(),
+                             {"robot_description": robot_description,
+                              "robot_description_semantic": open(os.path.join(pkg, "config", "left.srdf")).read()},
+                             {"moveit_servo": yaml.safe_load(open(os.path.join(pkg, "config", "left_servo.yaml")))},
+                             {"robot_description_kinematics": {"left_ur_manipulator": {
+                                 "kinematics_solver": "kdl_kinematics_plugin/KDLKinematicsPlugin",
+                                 "kinematics_solver_search_resolution": 0.005,
+                                 "kinematics_solver_timeout": 0.005}}},
+                             {"robot_description_planning": {"joint_limits": {
+                                 "left_" + j: {"has_velocity_limits": True, "max_velocity": 3.14,
+                                               "has_acceleration_limits": True, "max_acceleration": 5.0}
+                                 for j in ["shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                                           "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"]}}}]),
+            Node(package="quest_teleop_control", executable="servo_mode_switcher", name="left_servo_mode_switcher", output="screen",
+                 parameters=[{"service": "/left/servo_node/switch_command_type"}]),
         ]),
 
         Node(package="rviz2", executable="rviz2", output="screen", condition=IfCondition(launch_rviz),

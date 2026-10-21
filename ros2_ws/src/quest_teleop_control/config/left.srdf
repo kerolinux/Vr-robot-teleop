@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<robot name="ur5e_shadow">
+  <group name="left_ur_manipulator">
+    <chain base_link="left_base_link" tip_link="left_tool0"/>
+  </group>
+</robot>
