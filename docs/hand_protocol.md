@@ -36,3 +36,15 @@ Send zeros for joints whose flags are 0.
 
 Send at the tracking rate (60-72 Hz). Never retransmit: a lost frame is
 replaced by the next one.
+
+## How the ROS side uses the packets
+
+Both hands are streamed. `udp_hand_receiver` publishes each as `quest_teleop_msgs/HandSkeleton`, then:
+
+| Consumer | Uses | Result |
+|---|---|---|
+| `hand_conditioner` | right-hand joints | wrist-frame, filtered keypoints -> finger retargeting |
+| `hand_inputs` | right wrist joint | `/quest/right_hand/pose_raw` (arm control), when `publish_pose` is true |
+| `hand_inputs` | left-hand thumb tip and index tip | `/quest/clutch` (pinch strength, 0..1) |
+
+An untracked hand, or a tip whose position is flagged invalid, reads as "not pinching".

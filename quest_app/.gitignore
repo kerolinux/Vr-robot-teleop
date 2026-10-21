@@ -1,0 +1,16 @@
+# Unity generated folders and files
+/Library/
+/Temp/
+/Obj/
+/Logs/
+/UserSettings/
+/Builds/
+/Build/
+*.csproj
+*.sln
+*.apk
+*.aab
+
+# EncoderCheck (plain .NET) build output
+Tests/EncoderCheck/bin/
+Tests/EncoderCheck/obj/

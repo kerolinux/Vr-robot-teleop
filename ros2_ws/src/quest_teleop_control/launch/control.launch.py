@@ -36,7 +36,8 @@ def generate_launch_description():
         Command([FindExecutable(name="xacro"), " ",
                  PathJoinSubstitution([FindPackageShare("quest_teleop_description"), "urdf",
                                        "ur5e_shadow.urdf.xacro"]),
-                 " ur_type:=", ur_type]),
+                 " ur_type:=", ur_type,
+                 " left_hand:=", LaunchConfiguration("left_hand")]),
         value_type=str)
 
     # Kinematics, joint limits and SRDF come from UR's own (tested) MoveIt config package.
@@ -53,6 +54,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument("ur_type", default_value="ur5e"),
         DeclareLaunchArgument("launch_rviz", default_value="true"),
+        DeclareLaunchArgument("left_hand", default_value="true"),
 
         Node(package="robot_state_publisher", executable="robot_state_publisher", output="screen",
              parameters=[{"robot_description": robot_description}]),
@@ -61,6 +63,8 @@ def generate_launch_description():
         spawner("joint_state_broadcaster"),
         spawner("forward_position_controller"),
         spawner("hand_position_controller"),
+        spawner("left_forward_position_controller"),
+        spawner("left_hand_position_controller"),
 
         # Give the controllers and /joint_states a moment before Servo starts reading the robot state.
         TimerAction(period=5.0, actions=[

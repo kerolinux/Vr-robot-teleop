@@ -1,0 +1,63 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 500  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # MoveIt Servo writes joint positions here (name matches UR's config and Servo's command_out_topic)
+    forward_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    # The hand is commanded directly in joint space (retargeting output, Phase 3b)
+    hand_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    left_forward_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+forward_position_controller:
+  ros__parameters:
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+hand_position_controller:
+  ros__parameters:
+    joints:
+      - hand_thumb_joint1
+      - hand_thumb_joint2
+      - hand_thumb_joint3
+      - hand_thumb_joint4
+      - hand_thumb_joint5
+      - hand_index_finger_joint1
+      - hand_index_finger_joint2
+      - hand_index_finger_joint3
+      - hand_index_finger_joint4
+      - hand_middle_finger_joint1
+      - hand_middle_finger_joint2
+      - hand_middle_finger_joint3
+      - hand_middle_finger_joint4
+      - hand_ring_finger_joint1
+      - hand_ring_finger_joint2
+      - hand_ring_finger_joint3
+      - hand_ring_finger_joint4
+      - hand_little_finger_joint1
+      - hand_little_finger_joint2
+      - hand_little_finger_joint3
+      - hand_little_finger_joint4
+      - hand_little_finger_joint5
+
+left_forward_position_controller:
+  ros__parameters:
+    joints:
+      - left_shoulder_pan_joint
+      - left_shoulder_lift_joint
+      - left_elbow_joint
+      - left_wrist_1_joint
+      - left_wrist_2_joint
+      - left_wrist_3_joint

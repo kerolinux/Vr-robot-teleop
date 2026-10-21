@@ -19,3 +19,14 @@ hand_conditioner:
       d_cutoff: 1.0
       reset_gap: 0.5              # s of lost tracking before a joint's filter restarts
       min_fresh_fraction: 0.8     # fraction of joints that must be fresh for tracked=true
+
+hand_inputs:
+  ros__parameters:
+    left_topic: /quest/left_hand/skeleton_raw
+    right_topic: /quest/right_hand/skeleton_raw
+    clutch_topic: /quest/clutch
+    clutch_hand: left             # pinch THIS hand's thumb and index finger to engage the robot
+    pinch_open_dist: 0.07         # m: fingertips at least this far apart = 0 (open)
+    pinch_closed_dist: 0.02       # m: fingertips this close = 1 (pinched). teleop_core engages above 0.8
+    publish_pose: false           # true with the real headset: also publish the right wrist pose + pinch
+    input_timeout: 0.25           # s: if the clutch hand's packets stop, publish 0 (clutch released)

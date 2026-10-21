@@ -26,6 +26,7 @@ setup(
             "udp_hand_receiver = quest_hand.udp_hand_receiver:main",
             "hand_conditioner = quest_hand.hand_conditioner_node:main",
             "fake_hand_sender = quest_hand.fake_hand_sender:main",
+            "hand_inputs = quest_hand.hand_inputs_node:main",
         ],
     },
 )

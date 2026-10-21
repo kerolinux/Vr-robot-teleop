@@ -13,6 +13,12 @@ controller_manager:
     hand_position_controller:
       type: position_controllers/JointGroupPositionController
 
+    left_forward_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    left_hand_position_controller:
+      type: position_controllers/JointGroupPositionController
+
 forward_position_controller:
   ros__parameters:
     joints:
@@ -48,3 +54,39 @@ hand_position_controller:
       - hand_little_finger_joint3
       - hand_little_finger_joint4
       - hand_little_finger_joint5
+
+left_forward_position_controller:
+  ros__parameters:
+    joints:
+      - left_shoulder_pan_joint
+      - left_shoulder_lift_joint
+      - left_elbow_joint
+      - left_wrist_1_joint
+      - left_wrist_2_joint
+      - left_wrist_3_joint
+
+left_hand_position_controller:
+  ros__parameters:
+    joints:
+      - left_hand_thumb_joint1
+      - left_hand_thumb_joint2
+      - left_hand_thumb_joint3
+      - left_hand_thumb_joint4
+      - left_hand_thumb_joint5
+      - left_hand_index_finger_joint1
+      - left_hand_index_finger_joint2
+      - left_hand_index_finger_joint3
+      - left_hand_index_finger_joint4
+      - left_hand_middle_finger_joint1
+      - left_hand_middle_finger_joint2
+      - left_hand_middle_finger_joint3
+      - left_hand_middle_finger_joint4
+      - left_hand_ring_finger_joint1
+      - left_hand_ring_finger_joint2
+      - left_hand_ring_finger_joint3
+      - left_hand_ring_finger_joint4
+      - left_hand_little_finger_joint1
+      - left_hand_little_finger_joint2
+      - left_hand_little_finger_joint3
+      - left_hand_little_finger_joint4
+      - left_hand_little_finger_joint5

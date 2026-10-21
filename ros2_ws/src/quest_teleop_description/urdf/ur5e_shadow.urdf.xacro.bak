@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+  UR5e + Shadow Hand (no wrist DOF), with mock ros2_control hardware for both.
+  The arm part follows Universal_Robots_ROS2_Description (ur_mocked.urdf.xacro).
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5e_shadow">
+
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+  <xacro:include filename="$(find ur_description)/urdf/ros2_control_mock_hardware.xacro"/>
+  <xacro:include filename="$(find quest_teleop_description)/urdf/shadow_hand.xacro"/>
+
+  <xacro:arg name="ur_type" default="ur5e"/>
+  <xacro:arg name="tf_prefix" default=""/>
+  <xacro:arg name="joint_limit_params" default="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"/>
+  <xacro:arg name="kinematics_params" default="$(find ur_description)/config/$(arg ur_type)/default_kinematics.yaml"/>
+  <xacro:arg name="physical_params" default="$(find ur_description)/config/$(arg ur_type)/physical_parameters.yaml"/>
+  <xacro:arg name="visual_params" default="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"/>
+  <xacro:arg name="safety_limits" default="false"/>
+  <xacro:arg name="safety_pos_margin" default="0.15"/>
+  <xacro:arg name="safety_k_position" default="20"/>
+  <xacro:arg name="force_abs_paths" default="false"/>
+  <xacro:arg name="initial_positions_file" default="$(find quest_teleop_description)/config/initial_positions.yaml"/>
+  <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+
+  <!-- Where the hand's forearm base sits relative to the arm flange (tool0). -->
+  <xacro:arg name="hand_mount_xyz" default="0 0 0"/>
+  <xacro:arg name="hand_mount_rpy" default="0 0 0"/>
+
+  <link name="world"/>
+
+  <xacro:ur_robot
+    name="ur"
+    tf_prefix="$(arg tf_prefix)"
+    parent="world"
+    joint_limits_parameters_file="$(arg joint_limit_params)"
+    kinematics_parameters_file="$(arg kinematics_params)"
+    physical_parameters_file="$(arg physical_params)"
+    visual_parameters_file="$(arg visual_params)"
+    safety_limits="$(arg safety_limits)"
+    safety_pos_margin="$(arg safety_pos_margin)"
+    safety_k_position="$(arg safety_k_position)"
+    force_abs_paths="$(arg force_abs_paths)">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+
+  <xacro:shadow_hand prefix="hand_" parent="$(arg tf_prefix)tool0">
+    <origin xyz="$(arg hand_mount_xyz)" rpy="$(arg hand_mount_rpy)"/>
+  </xacro:shadow_hand>
+
+  <!-- Two ros2_control systems: the arm, and the hand (22 direct position-controlled joints). -->
+  <xacro:ur_ros2_control
+    name="ur_arm"
+    tf_prefix="$(arg tf_prefix)"
+    initial_positions="${xacro.load_yaml(initial_positions_file)}"/>
+  <xacro:shadow_hand_ros2_control name="shadow_hand" prefix="hand_"/>
+</robot>
