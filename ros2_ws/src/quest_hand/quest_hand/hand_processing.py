@@ -44,7 +44,10 @@ class ConditionedHand:
 
 class HandConditioner:
     def __init__(self, min_cutoff: float = 2.0, beta: float = 15.0, d_cutoff: float = 1.0,
-                 reset_gap: float = 0.5, min_fresh_fraction: float = 0.8):
+                 reset_gap: float = 0.5, min_fresh_fraction: float = 0.8, mirror_y: bool = False):
+        # mirror_y: reflect the hand across its sagittal plane so a LEFT hand reads like a right hand.
+        # Needed to drive the right-hand robot model from a left hand (thumb side +Y, as documented above).
+        self._mirror_y = mirror_y
         self._args = (min_cutoff, beta, d_cutoff)
         self.reset_gap = reset_gap
         self.min_fresh_fraction = min_fresh_fraction
@@ -77,11 +80,15 @@ class HandConditioner:
                     if last_t is not None and t - last_t > self.reset_gap:
                         self._filters[i].reset()
                     rel = rotate_vector(w_inv, p_ros[i] - w_p)
+                    if self._mirror_y:
+                        rel = rel * np.array([1.0, -1.0, 1.0])
                     self._last_p[i] = self._filters[i](rel, t)
                 self._last_valid_t[i] = t
                 fresh[i] = True
             if flags[i] & ROT_VALID:
                 rq = normalize(multiply(w_inv, normalize(q_ros[i])))
+                if self._mirror_y:  # reflection across y: rotation axis (an axial vector) becomes (-x, y, -z)
+                    rq = np.array([-rq[0], rq[1], -rq[2], rq[3]])
                 self._last_q[i] = -rq if rq[3] < 0 else rq  # keep w >= 0: no sign flips
 
         tracked = bool(fresh.mean() >= self.min_fresh_fraction)

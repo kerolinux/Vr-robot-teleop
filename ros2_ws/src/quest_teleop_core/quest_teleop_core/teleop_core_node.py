@@ -65,6 +65,7 @@ class TeleopCoreNode(Node):
         if self._clutch_source not in ("topic", "always"):
             raise ValueError("clutch_source must be 'topic' or 'always'")
         self._timeout = float(get("input_timeout"))
+        self._require_release = bool(get("require_release_after_timeout"))
         self._base_frame = get("base_frame")
         self._use_feedback = bool(get("use_robot_feedback"))
         self._ee_frame = get("ee_frame")
@@ -108,6 +109,7 @@ class TeleopCoreNode(Node):
         d("clutch_on_threshold", 0.8)
         d("clutch_off_threshold", 0.5)
         d("input_timeout", 0.25)
+        d("require_release_after_timeout", True)  # false: re-engage by itself once fresh data returns
         d("position_scale", 1.0)
         d("track_orientation", True)
         d("base_yaw_deg", 0.0)
@@ -167,11 +169,18 @@ class TeleopCoreNode(Node):
             return
         age = (self.get_clock().now() - self._last_rx).nanoseconds * 1e-9
         if age > self._timeout:
-            self._needs_release = True
+            # True (default): the operator must release and re-press the clutch. False: engage again
+            # automatically once fresh hand data arrives. Safe because engaging re-anchors the hand to
+            # the held robot target, so the robot never jumps; it only continues from where it stopped.
+            self._needs_release = self._require_release
             self._disengage(f"no hand data for {age:.2f}s")
 
     # ------------------------------------------------------------------ helpers
     def _engage(self) -> None:
+        if self._last_rx is None or (self.get_clock().now() - self._last_rx).nanoseconds * 1e-9 > self._timeout:
+            # Never anchor to a stale hand pose: the hand may have moved during the gap.
+            self.get_logger().warn("Not engaging: hand pose is stale", throttle_duration_sec=2.0)
+            return
         if self._hand is None:
             self.get_logger().warn("Clutch pressed but no hand data yet", throttle_duration_sec=2.0)
             return

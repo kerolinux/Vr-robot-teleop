@@ -39,6 +39,7 @@ class HandInputsNode(Node):
         d("pinch_open_dist", 0.07)
         d("pinch_closed_dist", 0.02)
         d("publish_pose", False)
+        d("pose_hand", "right")
         d("input_timeout", 0.25)
         get = lambda n: self.get_parameter(n).value  # noqa: E731
 
@@ -47,6 +48,7 @@ class HandInputsNode(Node):
             raise ValueError("clutch_hand must be 'left' or 'right'")
         self._open, self._closed = float(get("pinch_open_dist")), float(get("pinch_closed_dist"))
         self._publish_pose = bool(get("publish_pose"))
+        self._pose_hand = get("pose_hand")
         self._timeout = float(get("input_timeout"))
         self._last_clutch_rx = None
 
@@ -72,7 +74,7 @@ class HandInputsNode(Node):
             self._last_clutch_rx = self.get_clock().now()
             self._clutch_pub.publish(Float32(data=pinch))
 
-        if self._publish_pose and msg.hand == "right":
+        if self._publish_pose and msg.hand == self._pose_hand:
             self._pinch_pub.publish(Float32(data=pinch))
             wp = wrist_pose(pos, quat, flags, msg.tracked)
             if wp is not None:

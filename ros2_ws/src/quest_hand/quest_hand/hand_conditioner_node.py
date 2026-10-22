@@ -39,13 +39,15 @@ class HandConditionerNode(Node):
         d("filter.d_cutoff", 1.0)
         d("filter.reset_gap", 0.5)
         d("filter.min_fresh_fraction", 0.8)
+        d("mirror_y", False)                 # true for the LEFT hand when driving the right-hand robot model
         get = lambda n: self.get_parameter(n).value  # noqa: E731
 
         self._hand = get("hand")
         self._viz_frame = get("viz_frame")
         self._viz_origin = np.array(get("viz_origin"), dtype=float)
         self._cond = HandConditioner(get("filter.min_cutoff"), get("filter.beta"), get("filter.d_cutoff"),
-                                     get("filter.reset_gap"), get("filter.min_fresh_fraction"))
+                                     get("filter.reset_gap"), get("filter.min_fresh_fraction"),
+                                     mirror_y=bool(get("mirror_y")))
 
         self.create_subscription(HandSkeleton, get("input_topic"), self._on_raw, qos_profile_sensor_data)
         self._pub = self.create_publisher(HandSkeleton, get("output_topic"), 10)

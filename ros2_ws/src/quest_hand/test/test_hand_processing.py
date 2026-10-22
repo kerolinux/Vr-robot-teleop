@@ -83,3 +83,16 @@ def test_filter_restarts_after_a_long_dropout():
     out = c.process(moved, quat, ALL, 1.05)
     expected = openxr_to_ros_position(moved[8] - pos[WRIST])
     assert np.allclose(out.positions[8], expected, atol=1e-9)  # snapped, not glided
+
+
+def test_mirror_y_makes_a_left_hand_read_like_a_right_hand():
+    """A mirrored copy of a right hand (a left hand) must condition to the same wrist-frame skeleton."""
+    right_pos, right_quat = synthetic_hand(CURLS)
+    left_pos = right_pos * np.array([-1.0, 1.0, 1.0])        # reflect the thumb side (x -> -x)
+    left_quat = right_quat * np.array([1.0, -1.0, -1.0, 1.0])  # matching reflection of orientations
+    a = HandConditioner().process(right_pos, right_quat, ALL, 0.0)
+    b = HandConditioner(mirror_y=True).process(left_pos, left_quat, ALL, 0.0)
+    assert np.allclose(a.positions, b.positions, atol=1e-9)
+    assert np.allclose(a.quats, b.quats, atol=1e-9)
+    c = HandConditioner(mirror_y=False).process(left_pos, left_quat, ALL, 0.0)
+    assert not np.allclose(a.positions, c.positions)           # without mirroring they really differ
