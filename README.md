@@ -6,6 +6,13 @@ fingers, and every run can be saved as a dataset.
 
 **[Full VR teleoperation demonstration](docs/full_vr_teleop_demo.md)**
 
+## Video Demonstration:
+
+
+https://github.com/user-attachments/assets/907275ac-c69a-42af-a1bd-06c723dd5702
+
+
+
 Control both arms and both hands: position, wrist twist/tilt, finger articulation, clutch and mock-arm reset.
 The guide includes the complete startup sequence and a short demonstration walkthrough.
 
