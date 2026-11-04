@@ -42,10 +42,9 @@ def check_rotation_conversion() -> bool:
     return True
 
 
-def check_encoder() -> bool:
+def check_encoder() -> bool | None:
     if shutil.which("dotnet") is None:
-        print("SKIP  C# encoder check (dotnet not installed)")
-        return True
+        return None
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "packet.bin"
         empty = Path(tmp) / "no_nuget_packages_needed"   # the project has no packages: restore needs no network
@@ -77,5 +76,7 @@ if __name__ == "__main__":
     results = {"Unity -> OpenXR rotation conversion": check_rotation_conversion(),
                "C# packet bytes decode to the same values": check_encoder()}
     for name, ok in results.items():
-        print(("PASS  " if ok else "FAIL  ") + name)
-    sys.exit(0 if all(results.values()) else 1)
+        status = "SKIP  " if ok is None else ("PASS  " if ok else "FAIL  ")
+        print(status + name + (" (dotnet not installed)" if ok is None else ""))
+    # A partial check must not look like full verification to callers or CI.
+    sys.exit(1 if False in results.values() else (2 if None in results.values() else 0))

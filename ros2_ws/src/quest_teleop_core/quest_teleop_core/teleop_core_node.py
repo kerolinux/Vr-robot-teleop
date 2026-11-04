@@ -55,6 +55,10 @@ class TeleopCoreNode(Node):
             home_position=np.array(get("home_position"), dtype=float),
             home_quaternion=np.array(get("home_quaternion"), dtype=float),
             position_scale=float(get("position_scale")),
+            invert_forward=bool(get("invert_forward")),
+            invert_lateral=bool(get("invert_lateral")),
+            mirror_orientation=bool(get("mirror_orientation")),
+            invert_tilt=bool(get("invert_tilt")),
             track_orientation=bool(get("track_orientation")),
             base_yaw_rad=np.deg2rad(float(get("base_yaw_deg"))),
             workspace_min=np.array(get("workspace_min"), dtype=float),
@@ -111,6 +115,10 @@ class TeleopCoreNode(Node):
         d("input_timeout", 0.25)
         d("require_release_after_timeout", True)  # false: re-engage by itself once fresh data returns
         d("position_scale", 1.0)
+        d("invert_forward", False)
+        d("invert_lateral", False)
+        d("mirror_orientation", False)
+        d("invert_tilt", False)
         d("track_orientation", True)
         d("base_yaw_deg", 0.0)
         d("home_position", [0.4, 0.0, 0.4])

@@ -5,6 +5,7 @@ teleop_core:
     clutch_on_threshold: 0.8
     clutch_off_threshold: 0.5
     input_timeout: 0.25           # s without hand data -> auto-disengage
+    require_release_after_timeout: true  # release and re-engage after tracking loss
 
     # true: every time the clutch engages, the target starts from the robot's *measured* pose
     # (TF base_frame -> ee_frame). The sim launch turns this on. Leave false when no robot is running.
@@ -12,6 +13,10 @@ teleop_core:
     ee_frame: tool0
 
     position_scale: 1.0           # <1.0 = finer robot motion than hand motion
+    invert_forward: true        # operator-view correction: reverse forward/back position only
+    invert_lateral: true        # operator-view correction: reverse sideways position only
+    mirror_orientation: true   # match lateral reflection: reverse roll/yaw, preserve pitch
+    invert_tilt: true           # reverse pitch only; retain accepted twist/yaw mapping
     track_orientation: true
     base_yaw_deg: 0.0             # rotate hand motion to match the direction you face the robot
 

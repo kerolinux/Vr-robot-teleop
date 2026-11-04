@@ -22,6 +22,8 @@ def main(argv=None) -> int:
         bad += bool(r["problems"])
         print(f"{r['name']:8} {r['samples']:8d} {r['duration']:7.1f} {str(r['success']):>8} "
               f"{r['tracked']:8.0%} {r['engaged']:8.0%}  {'; '.join(r['problems']) or 'ok'}")
+        for side, coverage in r["per_arm"].items():
+            print(f"  {side}: tracked={coverage['tracked']:.0%}, engaged={coverage['engaged']:.0%}")
     ok = sum(r["success"] for r in rows)
     print(f"\n{ok}/{len(rows)} labelled successful, {bad} with problems")
     return 1 if bad else 0

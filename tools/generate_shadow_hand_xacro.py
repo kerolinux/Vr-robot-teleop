@@ -24,6 +24,22 @@ FIXED = {"forearm_joint", "wrist_joint"}
 RENAMES = {"index_finger_join2": "index_finger_joint2"}
 
 
+def reflectable(el):
+    """Reflection across local X; axial joint vectors need det(S)*S."""
+    for origin in el.iter("origin"):
+        for attr, factors in (("xyz", (True, False, False)), ("rpy", (False, True, True))):
+            if attr in origin.attrib:
+                values = origin.get(attr).split()
+                origin.set(attr, " ".join("${mirror * (" + v + ")}" if f else v
+                                          for v, f in zip(values, factors)))
+    for axis in el.iter("axis"):
+        x, y, z = axis.get("xyz").split()
+        axis.set("xyz", f"{x} ${{mirror * ({y})}} ${{mirror * ({z})}}")
+    for mesh in el.iter("mesh"):
+        x, y, z = mesh.get("scale", "1 1 1").split()
+        mesh.set("scale", f"${{mirror * ({x})}} {y} {z}")
+
+
 def main(upstream: Path, out: Path) -> None:
     root = ET.parse(upstream / "urdf" / "shadow_hand.urdf").getroot()
     unexpected = {c.tag for c in root} - {"link", "joint"}
@@ -51,6 +67,7 @@ def main(upstream: Path, out: Path) -> None:
                 lim = el.find("limit")
                 movable.append((name, float(lim.get("lower")), float(lim.get("upper"))))
             el.set("name", "${prefix}" + name)
+        reflectable(el)
         ET.indent(el, space="    ", level=2)
         body.append("    " + ET.tostring(el, encoding="unicode").rstrip())
 
@@ -77,7 +94,7 @@ def main(upstream: Path, out: Path) -> None:
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- Shadow Hand (no wrist DOF) mounted on `parent` at the given origin. -->
-  <xacro:macro name="shadow_hand" params="prefix parent *origin">
+  <xacro:macro name="shadow_hand" params="prefix parent *origin mirror:=1">
     <joint name="${{prefix}}mount" type="fixed">
       <parent link="${{parent}}"/>
       <child link="${{prefix}}forearm"/>

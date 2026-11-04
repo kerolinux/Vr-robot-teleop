@@ -11,7 +11,7 @@ use_gazebo: false
 command_in_type: speed_units
 scale:
   linear: 0.6
-  rotational: 0.3
+  rotational: 0.9  # rad/s (~52 deg/s); singularity/joint limits still take priority
   joint: 0.01
 system_latency_compensation: 0.04
 publish_period: 0.004

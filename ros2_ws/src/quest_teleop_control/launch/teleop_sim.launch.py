@@ -15,13 +15,17 @@ def _include(pkg, file, args=None):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument("track_orientation", default_value="true"),
+        DeclareLaunchArgument("base_yaw_deg", default_value="0.0"),
         DeclareLaunchArgument("launch_rviz", default_value="true"),
         DeclareLaunchArgument("real_headset", default_value="false",
                               description="true: the arm follows the right wrist from the Quest skeleton stream."),
         _include("quest_bridge", "bridge.launch.py"),
         _include("quest_hand", "hand_bridge.launch.py", {"publish_pose": LaunchConfiguration("real_headset")}),
         _include("quest_teleop_core", "teleop_core.launch.py",
-                 {"debug_tf": "false", "use_robot_feedback": "true"}),
+                 {"debug_tf": "false", "use_robot_feedback": "true",
+                  "track_orientation": LaunchConfiguration("track_orientation"),
+                  "base_yaw_deg": LaunchConfiguration("base_yaw_deg")}),
         _include("quest_teleop_control", "retarget.launch.py"),
         _include("quest_teleop_control", "control.launch.py",
                  {"launch_rviz": LaunchConfiguration("launch_rviz")}),

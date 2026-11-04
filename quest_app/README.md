@@ -93,13 +93,13 @@ ros2 launch quest_teleop_control teleop_sim.launch.py real_headset:=true
 ```bash
 ros2 topic hz /quest/right_hand/skeleton_raw     # about 60 Hz
 ros2 topic hz /quest/right_hand/pose_raw          # about 60 Hz
-ros2 topic echo /quest/clutch                     # 0.0 normally, up to 1.0 while pinching
+ros2 topic echo /quest/clutch                     # keyboard: 0.0 released, 1.0 engaged
 ```
 
 ## Using it
 
-- **Left hand: pinch thumb and index finger = engage.** Release = the arm stops and holds. Losing tracking of
-  that hand, or a network stall, also releases it.
+- **Keyboard clutch:** run `python3 tools/keyboard_clutch.py` in a separate WSL terminal. SPACE toggles engagement;
+  0 releases both arms. After tracking loss, release and engage again. Pinch no longer controls the default clutch.
 - **Right hand: wrist motion** drives the arm; **right fingers** drive the robot fingers.
 - The arm moves relative to where your hand was when you engaged, so you can release, reposition your arm and
   engage again without the robot jumping.
@@ -112,10 +112,11 @@ ros2 topic echo /quest/clutch                     # 0.0 normally, up to 1.0 whil
 ```bash
 ros2 launch quest_teleop_control teleop_sim.launch.py real_headset:=true
 ros2 run quest_hand fake_hand_sender --left-clutch
+python3 tools/keyboard_clutch.py   # separate terminal
 ```
 
 The fake sender streams a right hand (wrist circling, fingers waving) and a left hand whose pinch closes and
-opens every 20 s, so the arm engages, moves and releases exactly as it would with the headset.
+opens every 20 s. Engagement is controlled separately by the keyboard, as with the headset.
 
 ## Troubleshooting
 
@@ -123,7 +124,7 @@ opens every 20 s, so the arm engages, moves and releases exactly as it would wit
 |---|---|
 | Nothing arrives on `skeleton_raw` | Host IP correct? Same network? Firewall rule for UDP 5006? `adb logcat -s Unity` shows the sender's once-a-second status line. |
 | Status says right/left `LOST` | Hands not visible to the headset cameras; controllers still held; hand tracking off in Quest settings. |
-| `skeleton_raw` works but the arm never moves | Is the left pinch reaching 1.0 on `/quest/clutch`? Tune `pinch_open_dist` / `pinch_closed_dist`. |
+| `skeleton_raw` works but the arm never moves | Is the keyboard publishing 1.0 on `/quest/clutch`? After a timeout, release and re-engage. |
 | Arm moves in the wrong direction | Set `base_yaw_deg` (rotation about the vertical axis), or recentre the headset. |
 | Fingers bend the wrong way | Retargeting sign conventions are inferred; see `config/retarget.yaml` and report which joint. |
 | `XRHandSubsystem` not found at compile time | The XR Hands package is not installed, or the scripts sit in an assembly definition that does not reference `Unity.XR.Hands`. |

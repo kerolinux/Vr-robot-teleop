@@ -1,6 +1,9 @@
 """
 HDF5 demonstration storage (ROS-independent, unit-tested).
 
+The layout below is single-arm schema v1. Bimanual schema v2 pairs both arms,
+right then left, on one timestamp array; see docs/dataset_format.md.
+
 One .hdf5 file holds many demonstrations, laid out like robomimic so common imitation-learning
 code can read it with little glue:
 
@@ -92,7 +95,58 @@ class EpisodeBuffer:
         }
 
 
+class BimanualEpisodeBuffer:
+    """One timestamp per paired sample; action and joint columns are right, then left."""
+
+    def __init__(self):
+        self.right, self.left = EpisodeBuffer(), EpisodeBuffer()
+
+    def __len__(self):
+        return len(self.right)
+
+    def append(self, *, t, right, left):
+        self.right.append(t=t, **right)
+        self.left.append(t=t, **left)
+
+    def to_arrays(self):
+        right, left = self.right.to_arrays(), self.left.to_arrays()
+        return {
+            key: (value if key == "timestamps" else
+                  np.stack([value, left[key]], axis=1) if key.startswith("human/") else
+                  np.concatenate([value, left[key]], axis=1))
+            for key, value in right.items()
+        }
+
+
+BIMANUAL_SHAPES = {
+    key: (() if key == "timestamps" else (2,) + tail if key.startswith("human/") else (2 * tail[0],))
+    for key, tail in EXPECTED_SHAPES.items()
+}
+
+
+def arm_arrays(arrays, index):
+    """View one arm of schema v2 as a schema v1 episode for validation/training."""
+    return {
+        key: (value if key == "timestamps" else value[:, index] if key.startswith("human/")
+              else np.split(value, 2, axis=1)[index])
+        for key, value in arrays.items()
+    }
+
+
 def validate_episode(arrays: Dict[str, np.ndarray], rate_hz: float) -> List[str]:
+    actions = arrays.get("actions", np.empty((0, 0)))
+    if actions.ndim == 2 and actions.shape[1] == 2 * ACTION_DIM:
+        problems = [f"{key}: expected shape (T, {tail}), got {arrays.get(key, np.empty(0)).shape}"
+                    for key, tail in BIMANUAL_SHAPES.items()
+                    if key not in arrays or arrays[key].shape[1:] != tail]
+        if problems:
+            return problems
+        return [f"{side}: {problem}" for index, side in enumerate(("right", "left"))
+                for problem in _validate_single(arm_arrays(arrays, index), rate_hz)]
+    return _validate_single(arrays, rate_hz)
+
+
+def _validate_single(arrays: Dict[str, np.ndarray], rate_hz: float) -> List[str]:
     """Return human-readable problems (an empty list means the episode looks healthy)."""
     problems: List[str] = []
     for key, tail in EXPECTED_SHAPES.items():
@@ -135,11 +189,17 @@ def validate_episode(arrays: Dict[str, np.ndarray], rate_hz: float) -> List[str]
 
 def write_episode(path, arrays: Dict[str, np.ndarray], *, success: bool, rate_hz: float,
                   hand_joint_names: List[str], task: str = "", notes: str = "",
-                  robot: str = "ur5e_shadow") -> str:
+                  robot: str = "ur5e_shadow", base_frames=None, ee_frames=None) -> str:
     """Append one demonstration to `path` (created if needed). Returns its name, e.g. 'demo_3'."""
+    width = arrays["actions"].shape[1]
+    if width not in (ACTION_DIM, 2 * ACTION_DIM):
+        raise ValueError(f"unsupported action width: {width}")
+    version = 2 if width == 2 * ACTION_DIM else 1
     with h5py.File(path, "a") as f:
+        if "schema_version" in f.attrs and f.attrs["schema_version"] != version:
+            raise ValueError("cannot mix single-arm and bimanual episodes in one file")
         if "schema_version" not in f.attrs:
-            f.attrs["schema_version"] = SCHEMA_VERSION
+            f.attrs["schema_version"] = version
             f.attrs["robot"] = robot
             f.attrs["rate_hz"] = float(rate_hz)
             f.attrs["created"] = datetime.datetime.now().isoformat(timespec="seconds")
@@ -147,7 +207,15 @@ def write_episode(path, arrays: Dict[str, np.ndarray], *, success: bool, rate_hz
                                ("action_names", ["ee_target_x", "ee_target_y", "ee_target_z",
                                                  "ee_target_qx", "ee_target_qy", "ee_target_qz", "ee_target_qw"]
                                 + [f"hand_target_{n}" for n in hand_joint_names])):
+                if version == 2:
+                    names = [f"{side}/{name}" for side in ("right", "left") for name in names]
                 f.attrs.create(key, data=names, dtype=h5py.string_dtype())
+            sides = ["right", "left"] if version == 2 else ["right"]
+            f.attrs.create("arm_order", data=sides, dtype=h5py.string_dtype())
+            f.attrs.create("base_frames", data=base_frames or ["base_link", "left_base_link"][:len(sides)],
+                           dtype=h5py.string_dtype())
+            f.attrs.create("ee_frames", data=ee_frames or ["tool0", "left_tool0"][:len(sides)],
+                           dtype=h5py.string_dtype())
         data = f.require_group("data")
         existing = [int(k.split("_")[1]) for k in data.keys() if k.startswith("demo_")]
         name = f"demo_{max(existing) + 1 if existing else 0}"
@@ -195,5 +263,8 @@ def summarize(path) -> List[dict]:
             name=name, samples=int(attrs["num_samples"]), duration=float(attrs["duration"]),
             success=bool(attrs["success"]), task=attrs.get("task", ""),
             tracked=float(arrays["human/tracked"].mean()), engaged=float(arrays["human/engaged"].mean()),
+            per_arm=({side: dict(tracked=float(arrays["human/tracked"][:, i].mean()),
+                                 engaged=float(arrays["human/engaged"][:, i].mean()))
+                      for i, side in enumerate(("right", "left"))} if arrays["actions"].shape[1] == 2 * ACTION_DIM else {}),
             problems=validate_episode(arrays, attrs["rate_hz"])))
     return rows

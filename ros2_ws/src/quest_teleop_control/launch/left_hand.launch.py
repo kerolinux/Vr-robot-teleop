@@ -1,6 +1,6 @@
 """
-Left-hand fingers for the two-arm setup: conditions the left skeleton (mirrored, because the robot hand model is a
-right hand) and retargets it onto the left Shadow Hand. Also gives RViz a left skeleton.
+Left-hand fingers for the two-arm setup: conditions the left skeleton into the retargeter's canonical right-hand coordinates
+and applies the resulting joint angles to the mirrored left Shadow model. Also gives RViz a left skeleton.
 
 Expects: /quest/left_hand/skeleton_raw (from udp_hand_receiver), the left hand controller
 /left_hand_position_controller, and the left arm's engage topic /left/teleop/engaged.

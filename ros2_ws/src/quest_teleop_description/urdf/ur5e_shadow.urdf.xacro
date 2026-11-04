@@ -24,7 +24,7 @@
 
   <!-- Where the hand's forearm base sits relative to the arm flange (tool0). -->
   <xacro:arg name="hand_mount_xyz" default="0 0 0"/>
-  <xacro:arg name="hand_mount_rpy" default="0 0 0"/>
+  <xacro:arg name="hand_mount_rpy" default="-1.5707963267948966 0 -3.141592653589793"/>
 
   <link name="world"/>
 
@@ -74,7 +74,7 @@
     tf_prefix="left_"
     initial_positions="${xacro.load_yaml(initial_positions_file)}"/>
   <xacro:if value="$(arg left_hand)">
-    <xacro:shadow_hand prefix="left_hand_" parent="left_tool0">
+    <xacro:shadow_hand prefix="left_hand_" parent="left_tool0" mirror="-1">
       <origin xyz="$(arg hand_mount_xyz)" rpy="$(arg hand_mount_rpy)"/>
     </xacro:shadow_hand>
     <xacro:shadow_hand_ros2_control name="left_shadow_hand" prefix="left_hand_"/>

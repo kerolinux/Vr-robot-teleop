@@ -12,6 +12,8 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     params = os.path.join(get_package_share_directory("quest_teleop_core"), "config", "teleop.yaml")
     return LaunchDescription([
+        DeclareLaunchArgument("track_orientation", default_value="true"),
+        DeclareLaunchArgument("base_yaw_deg", default_value="0.0"),
         DeclareLaunchArgument(
             "debug_tf", default_value="true",
             description="Publish a static world->base_link TF so RViz can show the target. "
@@ -22,7 +24,9 @@ def generate_launch_description():
         Node(package="quest_teleop_core", executable="teleop_core", name="teleop_core",
              output="screen",
              parameters=[params, {"use_robot_feedback": ParameterValue(
-                 LaunchConfiguration("use_robot_feedback"), value_type=bool)}]),
+                 LaunchConfiguration("use_robot_feedback"), value_type=bool),
+                 "track_orientation": ParameterValue(LaunchConfiguration("track_orientation"), value_type=bool),
+                 "base_yaw_deg": ParameterValue(LaunchConfiguration("base_yaw_deg"), value_type=float)}]),
         Node(package="tf2_ros", executable="static_transform_publisher", name="debug_world_to_base",
              arguments=["--x", "0", "--y", "0", "--z", "0", "--roll", "0", "--pitch", "0",
                         "--yaw", "0", "--frame-id", "world", "--child-frame-id", "base_link"],

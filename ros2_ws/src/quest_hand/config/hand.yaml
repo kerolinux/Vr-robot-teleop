@@ -24,7 +24,7 @@ hand_inputs:
   ros__parameters:
     left_topic: /quest/left_hand/skeleton_raw
     right_topic: /quest/right_hand/skeleton_raw
-    clutch_topic: /quest/clutch
+    clutch_topic: /quest/clutch_gesture  # keyboard owns /quest/clutch
     clutch_hand: left             # pinch THIS hand's thumb and index finger to engage the robot
     pinch_open_dist: 0.07         # m: fingertips at least this far apart = 0 (open)
     pinch_closed_dist: 0.02       # m: fingertips this close = 1 (pinched). teleop_core engages above 0.8

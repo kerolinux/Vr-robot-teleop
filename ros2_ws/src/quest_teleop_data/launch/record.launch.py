@@ -14,10 +14,12 @@ def generate_launch_description():
         DeclareLaunchArgument("output_dir", default_value="", description="Where datasets are written."),
         DeclareLaunchArgument("task", default_value="teleop_demo"),
         DeclareLaunchArgument("record_rosbag", default_value="false"),
+        DeclareLaunchArgument("bimanual", default_value="false"),
         Node(package="quest_teleop_data", executable="episode_recorder", name="episode_recorder",
              output="screen",
              parameters=[params, {
                  "output_dir": LaunchConfiguration("output_dir"),
                  "task": LaunchConfiguration("task"),
+                 "bimanual": ParameterValue(LaunchConfiguration("bimanual"), value_type=bool),
                  "record_rosbag": ParameterValue(LaunchConfiguration("record_rosbag"), value_type=bool)}]),
     ])

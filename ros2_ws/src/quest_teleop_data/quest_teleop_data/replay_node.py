@@ -20,7 +20,7 @@ from geometry_msgs.msg import PoseStamped
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
 
-from .dataset_io import list_episodes, read_episode
+from .dataset_io import ACTION_DIM, list_episodes, read_episode, read_file_attrs
 
 
 class ReplayNode(Node):
@@ -34,6 +34,10 @@ class ReplayNode(Node):
         d("loop", False)
         d("rate", 50.0)
         d("base_frame", "base_link")
+        d("bimanual", False)  # explicit opt-in before publishing to the second arm
+        d("left_base_frame", "left_base_link")
+        d("left_target_pose_topic", "/left/teleop/target_pose")
+        d("left_hand_command_topic", "/left_hand_position_controller/commands")
         d("target_pose_topic", "/teleop/target_pose")
         d("hand_command_topic", "/hand_position_controller/commands")
         get = lambda n: self.get_parameter(n).value  # noqa: E731
@@ -46,13 +50,32 @@ class ReplayNode(Node):
         if demo not in list_episodes(path):
             raise SystemExit(f"{demo} not in {path}; available: {list_episodes(path)}")
         arrays, attrs = read_episode(path, demo)
-        self._t = arrays["timestamps"] - arrays["timestamps"][0]
+        timestamps = np.asarray(arrays["timestamps"], dtype=float)
         self._actions = arrays["actions"].astype(float)
+        if self._actions.ndim != 2 or self._actions.shape[1] not in (ACTION_DIM, 2 * ACTION_DIM):
+            raise ValueError("unsupported action layout")
+        self._bimanual = self._actions.shape[1] == 2 * ACTION_DIM
+        if self._bimanual != bool(get("bimanual")):
+            raise ValueError("bimanual parameter must match the dataset (use -p bimanual:=true for schema v2)")
+        if (timestamps.ndim != 1 or len(timestamps) < 2 or len(timestamps) != len(self._actions)
+                or not np.isfinite(self._actions).all() or not np.isfinite(timestamps).all()
+                or (np.diff(timestamps) <= 0).any()):
+            raise ValueError("replay requires matching finite actions and strictly increasing timestamps")
+        self._t = timestamps - timestamps[0]
+        frames = read_file_attrs(path).get("base_frames")
+        expected_frames = [get("base_frame"), get("left_base_frame")] if self._bimanual else [get("base_frame")]
+        if frames is not None and list(frames) != expected_frames:
+            raise ValueError(f"dataset frames {frames} do not match configured frames {expected_frames}")
         self._speed, self._settle, self._loop = float(get("speed")), float(get("settle_time")), bool(get("loop"))
         self._frame = get("base_frame")
 
         self._pose_pub = self.create_publisher(PoseStamped, get("target_pose_topic"), 10)
         self._hand_pub = self.create_publisher(Float64MultiArray, get("hand_command_topic"), 10)
+        self._left_pose_pub = self._left_hand_pub = None
+        if self._bimanual:
+            self._left_pose_pub = self.create_publisher(PoseStamped, get("left_target_pose_topic"), 10)
+            self._left_hand_pub = self.create_publisher(Float64MultiArray, get("left_hand_command_topic"), 10)
+        self._left_frame = get("left_base_frame")
         self._start = self.get_clock().now()
         self._done = False
         self.create_timer(1.0 / float(get("rate")), self._tick)
@@ -61,14 +84,19 @@ class ReplayNode(Node):
             f"after a {self._settle:.0f} s settle")
 
     def _publish(self, action: np.ndarray) -> None:
-        msg = PoseStamped()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = self._frame
-        msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = map(float, action[0:3])
-        (msg.pose.orientation.x, msg.pose.orientation.y,
-         msg.pose.orientation.z, msg.pose.orientation.w) = map(float, action[3:7])
-        self._pose_pub.publish(msg)
-        self._hand_pub.publish(Float64MultiArray(data=[float(x) for x in action[7:]]))
+        stamp = self.get_clock().now().to_msg()
+        def publish_arm(values, frame, pose_pub, hand_pub):
+            msg = PoseStamped()
+            msg.header.stamp = stamp
+            msg.header.frame_id = frame
+            msg.pose.position.x, msg.pose.position.y, msg.pose.position.z = map(float, values[:3])
+            (msg.pose.orientation.x, msg.pose.orientation.y,
+             msg.pose.orientation.z, msg.pose.orientation.w) = map(float, values[3:7])
+            pose_pub.publish(msg)
+            hand_pub.publish(Float64MultiArray(data=[float(x) for x in values[7:]]))
+        publish_arm(action[:ACTION_DIM], self._frame, self._pose_pub, self._hand_pub)
+        if self._bimanual:
+            publish_arm(action[ACTION_DIM:], self._left_frame, self._left_pose_pub, self._left_hand_pub)
 
     def _tick(self) -> None:
         if self._done:

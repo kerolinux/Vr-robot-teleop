@@ -4,6 +4,9 @@ import os
 import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.actions import Node
 
 
@@ -14,16 +17,18 @@ def generate_launch_description():
     core.update({
         "input_pose_topic": "/quest/left_hand/pose_raw",
         "input_pinch_topic": "/quest/left_hand/pinch",
-        "input_clutch_topic": "/quest/clutch",          # shared left-pinch clutch for now
+        "input_clutch_topic": "/quest/clutch",          # shared keyboard clutch
         "target_pose_topic": "/left/teleop/target_pose",
         "gripper_topic": "/left/teleop/gripper_cmd",
         "engaged_topic": "/left/teleop/engaged",
         "base_frame": "left_base_link",
         "ee_frame": "left_tool0",
         "use_robot_feedback": True,
-        "clutch_source": "always",
+        "clutch_source": "topic",
     })
     return LaunchDescription([
+        DeclareLaunchArgument("track_orientation", default_value="true"),
+        DeclareLaunchArgument("base_yaw_deg", default_value="0.0"),
         Node(package="quest_hand", executable="hand_inputs", name="left_hand_inputs", output="screen",
              parameters=[{
                  "publish_pose": True,
@@ -34,5 +39,7 @@ def generate_launch_description():
                  "clutch_topic": "/quest/unused_clutch",    # so it must not touch /quest/clutch
              }]),
         Node(package="quest_teleop_core", executable="teleop_core", name="teleop_core",
-             namespace="left", output="screen", parameters=[core]),
+             namespace="left", output="screen", parameters=[core, {
+                 "track_orientation": ParameterValue(LaunchConfiguration("track_orientation"), value_type=bool),
+                 "base_yaw_deg": ParameterValue(LaunchConfiguration("base_yaw_deg"), value_type=float)}]),
     ])

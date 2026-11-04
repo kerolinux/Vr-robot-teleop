@@ -39,6 +39,10 @@ class MapperConfig:
     home_position: np.ndarray                 # robot start target, base frame (m)
     home_quaternion: np.ndarray               # [x, y, z, w]
     position_scale: float = 1.0               # robot motion per metre of hand motion
+    invert_forward: bool = False             # reverse only base-frame X displacement
+    invert_lateral: bool = False             # reverse only base-frame Y displacement
+    mirror_orientation: bool = False         # orientation counterpart of lateral reflection
+    invert_tilt: bool = False                # reverse base-frame pitch only
     track_orientation: bool = True
     base_yaw_rad: float = 0.0                 # rotate hand motion about Z to align with robot base
     workspace_min: np.ndarray = field(default_factory=lambda: np.full(3, -np.inf))
@@ -88,6 +92,10 @@ class TeleopMapper:
 
         # Position: scaled hand displacement, rotated into the robot base frame
         delta_p = rotate_vector(self._yaw_q, np.asarray(hand_p, dtype=float) - self._hand_anchor_p)
+        if self.cfg.invert_forward:
+            delta_p[0] *= -1.0
+        if self.cfg.invert_lateral:
+            delta_p[1] *= -1.0
         p = self._robot_anchor_p + self.cfg.position_scale * delta_p
         p = np.clip(p, self.cfg.workspace_min, self.cfg.workspace_max)
 
@@ -95,6 +103,12 @@ class TeleopMapper:
         if self.cfg.track_orientation:
             dq = multiply(normalize(hand_q), conjugate(self._hand_anchor_q))
             dq = multiply(multiply(self._yaw_q, dq), conjugate(self._yaw_q))
+            if self.cfg.mirror_orientation:
+                # S R S for S=diag(1,-1,1): quaternion axes are axial vectors.
+                # Reverse roll and yaw; preserve pitch and the measured anchor.
+                dq = dq * np.array([-1., 1., -1., 1.])
+            if self.cfg.invert_tilt:
+                dq = dq * np.array([1., -1., 1., 1.])
             q = normalize(multiply(dq, self._robot_anchor_q))
         else:
             q = self._robot_anchor_q.copy()
